@@ -25,6 +25,14 @@ def generate_id(posts):
     return max((post["id"] for post in posts), default=0) + 1
 
 
+def fetch_post_by_id(posts, post_id):
+    """Gibt den Beitrag mit der ID zurück oder None."""
+    for post in posts:
+        if post["id"] == post_id:
+            return post
+    return None
+
+
 @app.route('/')
 def index():
     """Zeigt alle Beiträge auf der Startseite."""
@@ -57,6 +65,24 @@ def delete(post_id):
     blog_posts = [post for post in blog_posts if post["id"] != post_id]
     save_posts(blog_posts)
     return redirect(url_for('index'))
+
+
+@app.route('/update/<int:post_id>', methods=['GET', 'POST'])
+def update(post_id):
+    """Zeigt das Formular oder speichert den geänderten Beitrag."""
+    blog_posts = load_posts()
+    post = fetch_post_by_id(blog_posts, post_id)
+    if post is None:
+        return "Post not found", 404
+
+    if request.method == 'POST':
+        post["author"] = request.form.get("author")
+        post["title"] = request.form.get("title")
+        post["content"] = request.form.get("content")
+        save_posts(blog_posts)
+        return redirect(url_for('index'))
+
+    return render_template('update.html', post=post)
 
 
 if __name__ == '__main__':

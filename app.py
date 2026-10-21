@@ -50,6 +50,7 @@ def add():
             "author": request.form.get("author"),
             "title": request.form.get("title"),
             "content": request.form.get("content"),
+            "likes": 0,
         }
         blog_posts.append(new_post)
         save_posts(blog_posts)
@@ -83,6 +84,19 @@ def update(post_id):
         return redirect(url_for('index'))
 
     return render_template('update.html', post=post)
+
+
+@app.route('/like/<int:post_id>')
+def like(post_id):
+    """Erhöht die Like-Zahl des Beitrags um 1."""
+    blog_posts = load_posts()
+    post = fetch_post_by_id(blog_posts, post_id)
+    if post is None:
+        return "Post not found", 404
+
+    post["likes"] = post.get("likes", 0) + 1
+    save_posts(blog_posts)
+    return redirect(url_for('index'))
 
 
 if __name__ == '__main__':
